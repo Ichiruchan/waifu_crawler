@@ -8,7 +8,7 @@ chrome_options.add_argument("--disable-gpu")
 # chrome_options.add_argument(f"--proxy-server={proxy_url}")
 
 class MercariSpider(scrapy.Spider):
-    name = "mercari"
+    name = "mercari1"
     allowed_domains = ["jp.mercari.com"]
     start_urls = ["https://jp.mercari.com/search?keyword=%E3%82%A2%E3%83%89%E3%83%9E%E3%82%A4%E3%83%A4%E3%83%99%E3%82%AC%20%E3%83%90%E3%83%83%E3%82%B8"]
 
