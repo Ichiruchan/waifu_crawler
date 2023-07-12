@@ -81,18 +81,21 @@ class WaifuCrawlerDownloaderMiddleware:
         return None
 
     def process_response(self, request, response, spider):
+        print(f"request_urls: {request.url}")
         # Called with the response returned from the downloader.
         # spider.logger.info("Cool1")
         #
-        # spider.browser.get(url=request.url)
-        # time.sleep(1)
-        # row_response = spider.browser.page_source
+        spider.browser.get(url=request.url)
+        time.sleep(1)
+        row_response = spider.browser.page_source
         # Must either;
         # - return a Response object
         # - return a Request object
         # - or raise IgnoreRequest
-
-        return response
+        return scrapy.http.HtmlResponse(url=spider.browser.current_url,
+                                        body=row_response,
+                                        encoding="utf8",
+                                        request=request)
 
     def process_exception(self, request, exception, spider):
         # Called when a download handler or a process_request()

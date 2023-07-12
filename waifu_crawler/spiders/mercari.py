@@ -1,11 +1,11 @@
 import scrapy
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-# proxy_url = "socks5://127.0.0.1:7890"
+proxy_url = "socks5://127.0.0.1:7890"
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--disable-gpu")
-# chrome_options.add_argument(f"--proxy-server={proxy_url}")
+chrome_options.add_argument(f"--proxy-server={proxy_url}")
 
 class MercariSpider(scrapy.Spider):
     name = "mercari"
@@ -17,7 +17,13 @@ class MercariSpider(scrapy.Spider):
         super().__init__()
 
     def parse(self, response):
-        print("ok1")
+        logs = self.browser.get_log('browser')
+        print("start")
+        for log in logs:
+            if log['level'] == 'SEVERE' and 'XHR finished loading' in log['message']:
+                response = log['message'].split('XHR finished loading: ')[-1]
+                print(response)
+        print("end")
         # filename = "test.html"
         # with open(filename, "wb") as f:
         #     f.write(response.body)
