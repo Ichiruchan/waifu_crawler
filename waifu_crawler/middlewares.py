@@ -5,6 +5,7 @@
 import scrapy.http
 from scrapy import signals
 import time
+from seleniumwire.utils import decode
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 
@@ -86,16 +87,16 @@ class WaifuCrawlerDownloaderMiddleware:
         # spider.logger.info("Cool1")
         #
         spider.browser.get(url=request.url)
-        time.sleep(1)
-        row_response = spider.browser.page_source
-        # Must either;
-        # - return a Response object
-        # - return a Request object
-        # - or raise IgnoreRequest
-        return scrapy.http.HtmlResponse(url=spider.browser.current_url,
-                                        body=row_response,
-                                        encoding="utf8",
-                                        request=request)
+        time.sleep(10)
+        for bu_r in spider.browser.requests:
+            print(f"Url: {bu_r.url}")
+            if str(bu_r.url) == "https://api.mercari.jp/v2/entities:search":
+                return scrapy.http.HtmlResponse(url=spider.browser.current_url,
+                                                body=bu_r.response.body,
+                                                encoding="utf8",
+                                                request=bu_r
+                                                )
+        return response
 
     def process_exception(self, request, exception, spider):
         # Called when a download handler or a process_request()

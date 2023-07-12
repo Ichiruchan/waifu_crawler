@@ -1,11 +1,18 @@
 import scrapy
-from selenium import webdriver
+from seleniumwire import webdriver
 from selenium.webdriver.chrome.options import Options
-proxy_url = "socks5://127.0.0.1:7890"
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--disable-gpu")
-chrome_options.add_argument(f"--proxy-server={proxy_url}")
+sw_options = {
+    "proxy":
+        {
+            "http": "socks5://127.0.0.1:7890",
+            "https": "socks5://127.0.0.1:7890",
+            "no_proxy": "localhost,127.0.0.1"
+        }
+}
+
 
 class MercariSpider(scrapy.Spider):
     name = "mercari"
@@ -13,17 +20,13 @@ class MercariSpider(scrapy.Spider):
     start_urls = ["https://jp.mercari.com/search?keyword=%E3%82%A2%E3%83%89%E3%83%9E%E3%82%A4%E3%83%A4%E3%83%99%E3%82%AC%20%E3%83%90%E3%83%83%E3%82%B8"]
 
     def __init__(self):
-        self.browser = webdriver.Chrome(options=chrome_options)
+        self.browser = webdriver.Chrome(options=chrome_options,
+                                        seleniumwire_options=sw_options)
         super().__init__()
 
     def parse(self, response):
-        logs = self.browser.get_log('browser')
-        print("start")
-        for log in logs:
-            if log['level'] == 'SEVERE' and 'XHR finished loading' in log['message']:
-                response = log['message'].split('XHR finished loading: ')[-1]
-                print(response)
-        print("end")
+        print("test")
+        pass
         # filename = "test.html"
         # with open(filename, "wb") as f:
         #     f.write(response.body)
