@@ -2,6 +2,8 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import json
+
 import scrapy.http
 from scrapy import signals
 import time
@@ -89,13 +91,14 @@ class WaifuCrawlerDownloaderMiddleware:
         spider.browser.get(url=request.url)
         time.sleep(10)
         for bu_r in spider.browser.requests:
-            print(f"Url: {bu_r.url}")
+            # print(f"Url: {bu_r.url}")
             if str(bu_r.url) == "https://api.mercari.jp/v2/entities:search":
-                return scrapy.http.HtmlResponse(url=spider.browser.current_url,
-                                                body=bu_r.response.body,
-                                                encoding="utf8",
-                                                request=bu_r
-                                                )
+                spider.logger.info("Get needed request: %s" % spider.name)
+                response_body = decode(bu_r.response.body, bu_r.response.headers.get("Content-Encoding", "identity"))
+                data = json.loads(response_body)
+                print("Write result into json file")
+                with open("test.json", "w") as f:
+                    json.dump(data, f)
         return response
 
     def process_exception(self, request, exception, spider):

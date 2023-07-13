@@ -4,28 +4,20 @@ from selenium.webdriver.chrome.options import Options
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--disable-gpu")
-sw_options = {
-    "proxy":
-        {
-            "http": "socks5://127.0.0.1:7890",
-            "https": "socks5://127.0.0.1:7890",
-            "no_proxy": "localhost,127.0.0.1"
-        }
-}
 
 
 class MercariSpider(scrapy.Spider):
     name = "mercari"
     allowed_domains = ["jp.mercari.com"]
-    start_urls = ["https://jp.mercari.com/search?keyword=%E3%82%A2%E3%83%89%E3%83%9E%E3%82%A4%E3%83%A4%E3%83%99%E3%82%AC%20%E3%83%90%E3%83%83%E3%82%B8"]
+    start_urls = ["https://jp.mercari.com/search?keyword=%E3%82%A2%E3%83%89%E3%83%9E%E3%82%A4%E3%83%A4%E3%83%99%E3%82%AC%20%E3%83%90%E3%83%83%E3%82%B8&order=desc&sort=created_time&status=on_sale"]
 
     def __init__(self):
-        self.browser = webdriver.Chrome(options=chrome_options,
-                                        seleniumwire_options=sw_options)
+        self.browser = webdriver.Chrome(options=chrome_options)
         super().__init__()
 
     def parse(self, response):
-        print("test")
+        print("Get response")
+        print(response.body)
         pass
         # filename = "test.html"
         # with open(filename, "wb") as f:
