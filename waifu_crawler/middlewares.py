@@ -7,7 +7,6 @@ import json
 import scrapy.http
 from scrapy import signals
 import time
-from seleniumwire.utils import decode
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 
@@ -94,11 +93,16 @@ class WaifuCrawlerDownloaderMiddleware:
             # print(f"Url: {bu_r.url}")
             if str(bu_r.url) == "https://api.mercari.jp/v2/entities:search":
                 spider.logger.info("Get needed request: %s" % spider.name)
-                response_body = decode(bu_r.response.body, bu_r.response.headers.get("Content-Encoding", "identity"))
-                data = json.loads(response_body)
-                print("Write result into json file")
-                with open("test.json", "w") as f:
-                    json.dump(data, f)
+                # response_body = decode(bu_r.response.body, bu_r.response.headers.get("Content-Encoding", "identity"))
+                # data = json.loads(response_body)
+                # print("Write result into json file")
+                # with open("test.json", "w") as f:
+                #     json.dump(data, f)
+                print(f"sb {dict(bu_r.response.headers)}")
+                return scrapy.http.Response(url=bu_r.url,
+                                            status=bu_r.response.status_code,
+                                            headers=dict(bu_r.response.headers),
+                                            body=bu_r.response.body)
         return response
 
     def process_exception(self, request, exception, spider):
