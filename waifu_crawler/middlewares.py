@@ -71,6 +71,7 @@ class WaifuCrawlerDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
+        request.meta['proxy'] = "http://127.0.0.1:7890"
         # Called for each request that goes through the downloader
         # middleware.
 
@@ -84,22 +85,12 @@ class WaifuCrawlerDownloaderMiddleware:
 
     def process_response(self, request, response, spider):
         print(f"request_urls: {request.url}")
-        # Called with the response returned from the downloader.
-        # spider.logger.info("Cool1")
-        #
         spider.browser.get(url=request.url)
         time.sleep(10)
         for bu_r in spider.browser.requests:
-            # print(f"Url: {bu_r.url}")
             if str(bu_r.url) == "https://api.mercari.jp/v2/entities:search":
                 spider.logger.info("Get needed request: %s" % spider.name)
-                # response_body = decode(bu_r.response.body, bu_r.response.headers.get("Content-Encoding", "identity"))
-                # data = json.loads(response_body)
-                # print("Write result into json file")
-                # with open("test.json", "w") as f:
-                #     json.dump(data, f)
-                print(f"sb {dict(bu_r.response.headers)}")
-                return scrapy.http.Response(url=bu_r.url,
+                return scrapy.http.Response(url=request.url,
                                             status=bu_r.response.status_code,
                                             headers=dict(bu_r.response.headers),
                                             body=bu_r.response.body)

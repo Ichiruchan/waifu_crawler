@@ -9,6 +9,6 @@ import scrapy
 class WaifuCrawlerItem(scrapy.Item):
     # define the fields for your item here like:
     id = scrapy.Field()
-    name = scrapy.Field()
+    item_list = scrapy.Field()
 
 

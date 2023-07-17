@@ -6,6 +6,7 @@ import pandas as pd
 from urllib.parse import quote_plus
 import os
 import json
+from waifu_crawler.items import WaifuCrawlerItem
 
 seleniumwire_options = {
             'proxy': {
@@ -29,9 +30,10 @@ class MercariSpider(scrapy.Spider):
         con=db_conn.conn_engine,
         schema=os.getenv("mercari_schema", "public")
     )
+    kw_list = mercari_data_df["keyword"].to_list()
     mercari_start_urls = [
-        "https://jp.mercari.com/search?keyword={kw}&order=desc&sort=created_time&status=on_sale".format(
-            kw=quote_plus(item)) for item in (mercari_data_df["keyword"].to_list())]
+        ("https://jp.mercari.com/search?keyword={kw}&order=desc&sort=created_time&status=on_sale".format(
+            kw=quote_plus(item)), item) for item in kw_list]
 
     start_urls = mercari_start_urls
 
@@ -40,11 +42,31 @@ class MercariSpider(scrapy.Spider):
                                         seleniumwire_options=seleniumwire_options)
         super().__init__()
 
+    def start_requests(self):
+        for url, kw in self.start_urls:
+            print(f"从煤炉开始查询关键词{kw}")
+            yield scrapy.Request(url=url, callback=self.parse, meta={"original_url": url, "kw": kw, "index": 0})
+
     def parse(self, response):
         response_body = decode(response.body, response.headers.get("Content-Encoding", "identity").decode("utf-8"))
-        print("Get response body")
         res_dict = dict(json.loads(response_body.decode("utf-8")))
-        pass
+        id_list = [item["id"] for item in res_dict["items"]]
+        next_page_token = res_dict["meta"]["nextPageToken"]
+
+        scrapy_item = WaifuCrawlerItem()
+        scrapy_item["id"] = str(response.meta["kw"])
+        scrapy_item["item_list"] = id_list
+        yield scrapy_item
+
+            # if next_page_token:
+            #
+            #     print(f"查询下一页{next_page_token}，关键词为{response.meta['kw']}")
+            #     next_url = str(response.meta["original_url"]) + "&page_token=" + str(quote_plus(next_page_token))
+            #     yield scrapy.Request(url=next_url, callback=self.parse, meta={"original_url": response.meta["original_url"],
+            #                                                                   "kw": response.meta["kw"],
+            #                                                                   "index": response.meta["index"] + 1})
+
+
         # filename = "test.html"
         # with open(filename, "wb") as f:
         #     f.write(response.body)
