@@ -90,12 +90,17 @@ ROBOTSTXT_OBEY = False
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # Set settings whose default value is deprecated to a future-proof value
-logging.getLogger("seleniumwire.server").setLevel(logging.WARNING)
-logging.getLogger("seleniumwire.handler").setLevel(logging.WARNING)
+logging.getLogger("seleniumwire").setLevel(logging.WARNING)
+logging.getLogger("scrapy").setLevel(logging.WARNING)
+logging.getLogger("selenium").setLevel(logging.WARNING)
 LOG_LEVEL = False
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+DOWNLOADER_MIDDLEWARES = {
+    'waifu_crawler.middlewares.WaifuCrawlerDownloaderMiddleware': 800,
+    "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,
+}
 ITEM_PIPELINES = {
     "waifu_crawler.pipelines.WaifuCrawlerPipeline": 800
 }

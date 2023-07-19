@@ -2,14 +2,14 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-import json
-
 import scrapy.http
 from scrapy import signals
 import time
 # useful for handling different item types with a single interface
-from itemadapter import is_item, ItemAdapter
-
+from seleniumwire import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 class WaifuCrawlerSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
@@ -85,15 +85,40 @@ class WaifuCrawlerDownloaderMiddleware:
 
     def process_response(self, request, response, spider):
         print(f"request_urls: {request.url}")
+        seleniumwire_options = {
+            'proxy': {
+                'http': 'http://127.0.0.1:7890',
+                'https': 'http://127.0.0.1:7890',
+                'no_proxy': 'localhost,127.0.0.1'
+            }
+        }
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument("--disable-gpu")
+        spider.browser = webdriver.Chrome(options=chrome_options,
+                                          seleniumwire_options=seleniumwire_options)
         spider.browser.get(url=request.url)
-        time.sleep(10)
+
+        try:
+            WebDriverWait(spider.browser, 60).until(
+                EC.presence_of_element_located((By.ID, "item-grid"))
+            )
+        except Exception as e:
+            spider.logger.error(f"等待请求时出错：{e}")
+        special_response = None
+
         for bu_r in spider.browser.requests:
-            if str(bu_r.url) == "https://api.mercari.jp/v2/entities:search":
+            if str(bu_r.url) == "https://api.mercari.jp/v2/entities:search" and bu_r.response:
                 spider.logger.info("Get needed request: %s" % spider.name)
-                return scrapy.http.Response(url=request.url,
-                                            status=bu_r.response.status_code,
-                                            headers=dict(bu_r.response.headers),
-                                            body=bu_r.response.body)
+                special_response = scrapy.http.Response(url=request.url,
+                                                        status=bu_r.response.status_code,
+                                                        headers=dict(bu_r.response.headers),
+                                                        body=bu_r.response.body)
+                break
+        spider.browser.quit()
+        if special_response:
+            return special_response
         return response
 
     def process_exception(self, request, exception, spider):
